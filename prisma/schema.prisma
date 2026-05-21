@@ -12,9 +12,18 @@ enum Device {
     TABLET
 }
 
+model User {
+    id        Int    @id @default(autoincrement())
+    firstname String
+    lastname  String
+    items     Item[]
+}
+
 model Item {
-    id          Int         @id @default(autoincrement())
-    model       Device
-    checkedOut  Boolean     @default(false)
-    date        DateTime    @default(now())
+    id             Int       @id @default(autoincrement())
+    model          Device
+    checkedOut     Boolean   @default(false)
+    dateCheckedOut DateTime?
+    checkedOutById Int?
+    checkedOutBy   User?     @relation(fields: [checkedOutById], references: [id])
 }
