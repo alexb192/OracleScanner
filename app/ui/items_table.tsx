@@ -7,7 +7,8 @@ type Item = {
     id: number
     model: string
     checkedOut: boolean
-    date: string | null
+    checkedOutDate: string | null
+    checkedOutById: number | null
 }
 
 export default function ItemsTable({ items }: { items: Item[] }) {
@@ -20,8 +21,9 @@ export default function ItemsTable({ items }: { items: Item[] }) {
                     <tr>
                         <th scope="col" className="px-6 py-3 font-medium">ID</th>
                         <th scope="col" className="px-6 py-3 font-medium">Model</th>
-                        <th scope="col" className="px-6 py-3 font-medium">Checked Out</th>
-                        <th scope="col" className="px-6 py-3 font-medium">Date</th>
+                        <th scope="col" className="px-6 py-3 font-medium">Checked Out Status</th>
+                        <th scope="col" className="px-6 py-3 font-medium">Checked Out Date</th>
+                        <th scope="col" className="px-6 py-3 font-medium">Checked Out By</th>
                         <th scope="col" className="px-6 py-3 font-medium">
                             Enable Deletion:&nbsp;
                             <input
@@ -39,7 +41,8 @@ export default function ItemsTable({ items }: { items: Item[] }) {
                             <th scope="row" className="px-6 py-4 font-medium text-zinc-900 dark:text-white whitespace-nowrap">{item.id}</th>
                             <td className="px-6 py-4">{item.model}</td>
                             <td className="px-6 py-4">{item.checkedOut ? 'Yes' : 'No'}</td>
-                            <td className="px-6 py-4">{item.date ?? '—'}</td>
+                            <td className="px-6 py-4">{item.checkedOutDate ?? '—'}</td>
+                            <td className="px-6 py-4">{item.checkedOutById ?? '—'}</td>
                             <td className="px-6 py-4">
                                 <form action={handleDelete}>
                                     <input type="hidden" name="id" value={item.id} />

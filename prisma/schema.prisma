@@ -14,8 +14,8 @@ enum Device {
 
 model User {
     id        Int    @id @default(autoincrement())
-    firstname String
-    lastname  String
+    firstName String
+    lastName  String
     items     Item[]
 }
 
