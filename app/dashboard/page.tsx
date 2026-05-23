@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import ItemsTable from '@/app/ui/items_table'
 import { fetchItems } from '@/app/lib/db'
 import CreateItem from '@/app/ui/create_item_form'
