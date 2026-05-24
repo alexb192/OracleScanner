@@ -18,6 +18,20 @@ export async function deleteItem(id: number){
     console.log(`deleted ${id}`);
 }
 
+export async function checkOutItem(id: number, userId: number) {
+    await prisma.item.update({
+        where: {
+            id: id
+        },
+        data: {
+            checkedOut: true,
+            dateCheckedOut: new Date(),
+            checkedOutById: userId
+        }
+    });
+    console.log(`Checked out item ${id} to user ${userId}`);
+}
+
 export async function fetchItems() {
     const result = await prisma.item.findMany();
     return result;

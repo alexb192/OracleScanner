@@ -1,11 +1,20 @@
 'use server'
 import { revalidatePath } from 'next/cache'
 import { Device } from '@/prisma/generated/prisma/client'
-import { createItem, deleteItem } from '@/app/lib/db'
+import { createItem, deleteItem, checkOutItem } from '@/app/lib/db'
 
-export async function handleSubmit(formData: FormData) {
+export async function handleSubmitItem(formData: FormData) {
   const type = formData.get('device') as Device
   await createItem(type)
+  revalidatePath('/dashboard')
+}
+
+export async function handleSubmitCheckout(formData: FormData) {
+  const itemId = parseInt(formData.get('itemId') as string, 10)
+  if (itemId) {
+    checkOutItem(itemId, 1) // hardcoded user id for testing
+  }
+
   revalidatePath('/dashboard')
 }
 
