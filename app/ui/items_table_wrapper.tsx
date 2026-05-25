@@ -8,7 +8,9 @@ export default async function ItemsTableWrapper() {
     model: item.model,
     checkedOut: item.checkedOut,
     checkedOutDate: item.dateCheckedOut?.toLocaleDateString('en-US') ?? null,
-    checkedOutById: item.checkedOutById,
+    checkedOutBy: item.checkedOutBy
+      ? (item.checkedOutBy.name ?? item.checkedOutBy.email ?? '—')
+      : null,
   }))
   return <ItemsTable items={serialized} />
 }

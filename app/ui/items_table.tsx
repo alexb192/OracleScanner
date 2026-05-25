@@ -1,14 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { handleDelete } from '@/app/actions'
+import { handleDelete } from '@/app/actions/forms'
 
 type Item = {
     id: number
     model: string
     checkedOut: boolean
     checkedOutDate: string | null
-    checkedOutById: number | null
+    checkedOutBy: string | null
 }
 
 export default function ItemsTable({ items }: { items: Item[] }) {
@@ -42,7 +42,7 @@ export default function ItemsTable({ items }: { items: Item[] }) {
                             <td className="px-6 py-4">{item.model}</td>
                             <td className="px-6 py-4">{item.checkedOut ? 'Yes' : 'No'}</td>
                             <td className="px-6 py-4">{item.checkedOutDate ?? '—'}</td>
-                            <td className="px-6 py-4">{item.checkedOutById ?? '—'}</td>
+                            <td className="px-6 py-4">{item.checkedOutBy ?? '—'}</td>
                             <td className="px-6 py-4">
                                 <form action={handleDelete}>
                                     <input type="hidden" name="id" value={item.id} />

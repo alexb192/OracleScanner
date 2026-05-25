@@ -1,6 +1,10 @@
 import { prisma } from "./prisma";
 import { Device } from "@/prisma/generated/prisma/client" // prisma schema enum
 
+// database functions for creating, deleting, checking out items, and fetching items. 
+// These are called from the server actions in app/actions/forms.ts which handle the form submissions from the frontend. 
+
+// actions/forms.ts -> handleSubmitItem -> createItem
 export async function createItem(deviceType: Device) {
   await prisma.item.create({
     data: {
@@ -9,6 +13,7 @@ export async function createItem(deviceType: Device) {
   });
 }
 
+// actions/forms.ts -> handleDelete -> deleteItem
 export async function deleteItem(id: number){
     await prisma.item.delete({
         where: {
@@ -18,21 +23,25 @@ export async function deleteItem(id: number){
     console.log(`deleted ${id}`);
 }
 
-export async function checkOutItem(id: number, userId: number) {
+// actions/forms.ts -> handleSubmitCheckout -> checkOutItem
+export async function checkOutItem(id: number, userId: string) {
     await prisma.item.update({
-        where: {
-            id: id
-        },
+        where: { id },
         data: {
             checkedOut: true,
             dateCheckedOut: new Date(),
             checkedOutById: userId
         }
     });
-    console.log(`Checked out item ${id} to user ${userId}`);
 }
 
+// dashboard/page.tsx -> ItemsTableWrapper -> fetchItems
 export async function fetchItems() {
-    const result = await prisma.item.findMany();
-    return result;
+    return prisma.item.findMany({
+        include: {
+            checkedOutBy: {
+                select: { name: true, email: true }
+            }
+        }
+    });
 }

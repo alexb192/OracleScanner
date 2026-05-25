@@ -1,4 +1,4 @@
-import { handleSubmitCheckout } from '@/app/actions'
+import { handleSubmitCheckout } from '@/app/actions/forms'
 
 const CheckOut = async () => {
     
