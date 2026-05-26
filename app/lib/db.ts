@@ -1,5 +1,4 @@
 import { prisma } from "./prisma";
-import { Prisma } from "@/prisma/generated/prisma/client";
 import { Device } from "@/prisma/generated/prisma/client" // prisma schema enum
 
 // database functions for creating, deleting, checking out items, and fetching items. 
@@ -26,22 +25,23 @@ export async function deleteItem(id: number){
 
 // actions/forms.ts -> handleSubmitCheckout -> checkOutItem
 export async function checkOutItem(id: number, userId: string): Promise<{ error: string } | null> {
-    try {
-        await prisma.item.update({
-            where: { id, checkedOut: false },
-            data: {
-                checkedOut: true,
-                dateCheckedOut: new Date(),
-                checkedOutById: userId
-            }
-        });
-        return null;
-    } catch (e) {
-        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
-            return { error: 'This item is already checked out.' };
+    const result = await prisma.item.updateMany({
+        where: { id, checkedOut: false },
+        data: {
+            checkedOut: true,
+            dateCheckedOut: new Date(),
+            checkedOutById: userId
         }
-        throw e;
+    });
+
+    if (result.count === 0) {
+        // Could not update — distinguish between missing vs already checked out
+        const item = await prisma.item.findUnique({ where: { id } });
+        if (!item) return { error: 'This item does not exist.' };
+        return { error: 'This item is already checked out.' };
     }
+
+    return null;
 }
 
 // dashboard/page.tsx -> ItemsTableWrapper -> fetchItems

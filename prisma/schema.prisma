@@ -5,6 +5,8 @@ generator client {
 
 datasource db {
     provider = "postgresql"
+    url      = env("PRISMA_DATABASE_URL") // required for migrations, despite being supplied already by app/lib/prisma.ts
+
 }
 
 enum Device {

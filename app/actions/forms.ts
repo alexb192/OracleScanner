@@ -32,6 +32,11 @@ export async function handleSubmitCheckout(
   const userId = await sessionRequired()
 
   const itemId = parseInt(formData.get('itemId') as string, 10)
+
+  if (isNaN(itemId)) {
+    return { error: 'Please enter a valid item ID.' }
+  }
+
   if (itemId) {
     const result = await checkOutItem(itemId, userId)
     if (result?.error) return result
