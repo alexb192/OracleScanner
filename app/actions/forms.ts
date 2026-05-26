@@ -25,15 +25,20 @@ export async function handleSubmitItem(formData: FormData) {
 }
 
 // /dashboard Check Out form action
-export async function handleSubmitCheckout(formData: FormData) {
+export async function handleSubmitCheckout(
+  _prevState: { error: string } | null,
+  formData: FormData
+): Promise<{ error: string } | null> {
   const userId = await sessionRequired()
 
   const itemId = parseInt(formData.get('itemId') as string, 10)
   if (itemId) {
-    await checkOutItem(itemId, userId)
+    const result = await checkOutItem(itemId, userId)
+    if (result?.error) return result
   }
 
   revalidatePath('/dashboard')
+  return null
 }
 
 // //dashboard Items Table delete button action

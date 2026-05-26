@@ -42,3 +42,7 @@ next-env.d.ts
 
 # prisma generated client
 /prisma/generated
+
+# claude
+AGENTS.md
+CLAUDE.md
