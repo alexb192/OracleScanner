@@ -1,82 +1,82 @@
 # TODO
 
-Items surfaced from code review of commit `b4be357` (OAuth signup/login/logout).
+Items surfaced from code review of QR scanner (`app/ui/qr_scanner.tsx`, `app/scanner/page.tsx`).
 
 ---
 
 ## 🔴 High
 
-### 1. `checkOutItem` allows overwriting an existing checkout
-**File:** `app/lib/db.ts:28`
+### 1. `parseInt` returns `Infinity` for very long digit strings — unhandled Prisma throw
+**File:** `app/actions/forms.ts:52`
 
-`prisma.item.update` runs unconditionally — any authenticated user can submit a checkout form with any `itemId` and overwrite the `checkedOutById` field of an item already checked out by someone else. The original checkout is silently lost.
+`/^\d+$/` and `itemId <= 0` both pass for a 310+ digit string. `parseInt('9'.repeat(350), 10)` returns `Infinity`. `Infinity <= 0` is false, so `checkOutItem(Infinity, userId)` is called. Prisma throws a P2020 integer-overflow validation error, which propagates as an unhandled server-action exception (500) instead of returning `{ error }`.
 
-**Fix:** Add a `where: { checkedOut: false }` clause (or check ownership) so the update only applies to available items. Optionally, return a user-facing error when the item is already taken.
+**Fix:** Add a `Number.isSafeInteger` check after `parseInt`, or cap the raw string length before parsing:
 
 ```ts
-await prisma.item.update({
-  where: { id, checkedOut: false }, // guard added
-  data: { checkedOut: true, dateCheckedOut: new Date(), checkedOutById: userId },
-});
+if (raw.length > 10 || !Number.isSafeInteger(itemId)) {
+  return { error: 'Please enter a valid item ID.' }
+}
 ```
 
 ---
 
 ## 🟠 Medium
 
-### 2. Dashboard page has no server-side redirect when unauthenticated
-**File:** `app/dashboard/page.tsx:9`
+### 2. Bare `catch {}` swallows non-auth errors from `auth()` — reports them as "session expired"
+**File:** `app/actions/forms.ts:35`
 
-`auth()` is called but there is no `redirect('/login')` fallback when `session` is null. The proxy (`proxy.ts`) is the only protection — if it is bypassed (e.g. direct server-side fetch, future refactor, framework edge-case), the full page including all item data renders for unauthenticated callers.
+The `try/catch` wrapping `sessionRequired()` catches every exception, including genuine infrastructure errors (DB down, network timeout, misconfigured JWT secret). All are silently swallowed and returned as `{ error: 'Session expired. Please sign in again.' }` with no logging. A real outage becomes invisible to operators and gives the user a wrong diagnosis.
 
-**Fix:** Add a defence-in-depth redirect after the session check:
+**Fix:** Either log the error before returning, or only catch the specific `Unauthorized` case:
 
 ```ts
-const session = await auth()
-if (!session) redirect('/login')
+try {
+  userId = await sessionRequired()
+} catch (err) {
+  const isUnauthorized = err instanceof Error && err.message === 'Unauthorized'
+  if (!isUnauthorized) console.error('sessionRequired failed', err)
+  return { error: 'Session expired. Please sign in again.' }
+}
 ```
 
 ---
 
-### 3. Removing `url` from the Prisma datasource breaks migrations
-**File:** `prisma/schema.prisma:6`
+### 3. `handleDelete` throws instead of returning `{ error }` — crashes to error boundary
+**File:** `app/actions/forms.ts:71`
 
-The `url = env("PRISMA_DATABASE_URL")` line was removed from the datasource block. The runtime adapter in `app/lib/prisma.ts` supplies its own connection string, so queries work fine. However, Prisma CLI commands (`prisma migrate dev`, `prisma db push`, `prisma migrate deploy`) fall back to the `DATABASE_URL` env var when no `url` is specified in the schema. This project uses `PRISMA_DATABASE_URL`, so migrations will fail if `DATABASE_URL` is not also set in the environment.
+`handleDelete` is wired as a plain `<form action={handleDelete}>` (no `useActionState`), so any thrown error has no client-side state channel to land in. If the action throws (bad input, Prisma error, etc.), Next.js renders a generic error boundary / 500 page instead of showing an inline message. This is inconsistent with `handleSubmitCheckout`, which returns `{ error }` for every failure.
 
-**Fix:** Either restore the `url` field or ensure `DATABASE_URL` is aliased to `PRISMA_DATABASE_URL` in all environments where migrations run.
+**Fix:** Since the calling form doesn't use `useActionState`, the simplest remedy is to ensure inputs are always valid (the form already sets `value={item.id}` from the DB), and/or add an error boundary around the dashboard. Alternatively, migrate the delete form to `useActionState` to give it a real error channel.
 
-```prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("PRISMA_DATABASE_URL") // restore this
-}
+---
+
+### 4. `id=0` passes the `isNaN` guard in `handleDelete` — causes unhandled Prisma P2025
+**File:** `app/actions/forms.ts:70`
+
+`parseInt('0', 10)` returns `0`. `isNaN(0)` is `false`, so `deleteItem(0)` is called. `prisma.item.delete({ where: { id: 0 } })` throws P2025 ("Record to delete does not exist") since auto-increment IDs start at 1. This propagates as an unhandled crash rather than a user-facing error.
+
+**Fix:** Extend the guard to cover zero and negatives:
+
+```ts
+if (isNaN(id) || id <= 0) throw new Error('Invalid item ID')
 ```
 
 ---
 
 ## 🟡 Low
 
-### 4. `handleSubmitCheckout` silently no-ops on blank/invalid item ID
-**File:** `app/actions/forms.ts:32`
+### 5. Camera stream not stopped when `video.play()` rejects — camera light stays on
+**File:** `app/ui/qr_scanner.tsx:85`
 
-`parseInt('', 10)` returns `NaN`, and `if (NaN)` is falsy, so submitting the checkout form with a blank or non-numeric `itemId` skips the checkout entirely. `revalidatePath` still fires and the form resets — the user gets no feedback that nothing happened.
+When `video.play()` rejects (e.g. browser autoplay policy), `setCameraError` is called but the `MediaStream` tracks are never stopped. The error auto-clears after 3 s, leaving the user with a blank video box, no error message, and the camera indicator light still on. The stream is only cleaned up on component unmount.
 
-**Fix:** Use an explicit `isNaN` guard and return an error string:
-
-```ts
-if (isNaN(itemId)) return // or throw / return error message
-```
-
----
-
-### 5. `handleDelete` logs to server console on invalid ID instead of surfacing an error
-**File:** `app/actions/forms.ts:44`
-
-When the `id` field is blank or malformed, `parseInt` returns `NaN`, the ternary falls through to `console.log('error')`, and the action returns `undefined` (success) to the client. The deletion silently does nothing from the user's perspective.
-
-**Fix:** Throw or return an error instead of logging:
+**Fix:** Stop the tracks inside the `.catch()` handler:
 
 ```ts
-if (isNaN(id)) throw new Error('Invalid item ID')
-await deleteItem(id)
+video.play().catch(() => {
+  stream.getTracks().forEach((t) => t.stop())
+  video.srcObject = null
+  setCameraError('Could not start video playback. Try reloading the page.')
+})
 ```

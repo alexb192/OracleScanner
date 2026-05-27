@@ -4,6 +4,8 @@ import Credentials from 'next-auth/providers/credentials'
 import { prisma } from '@/app/lib/prisma'
 import bcrypt from 'bcryptjs'
 
+// breaks down the NextAuth configuration into separate exports so that the auth handler can be used in both the 
+// API route and the server actions without causing a duplicate handler error.
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },

@@ -29,18 +29,42 @@ export async function handleSubmitCheckout(
   _prevState: { error: string } | null,
   formData: FormData
 ): Promise<{ error: string } | null> {
-  const userId = await sessionRequired()
+  let userId: string
+  try {
+    userId = await sessionRequired()
+  } catch {
+    return { error: 'Session expired. Please sign in again.' }
+  }
 
-  const itemId = parseInt(formData.get('itemId') as string, 10)
+  const raw = formData.get('itemId');
 
-  if (isNaN(itemId)) {
+  // null guard with provided error
+  if (raw === null) {
+    return { error: 'Please enter an item ID.' }
+  }
+
+  // string type assertion.
+  const trimmed = (raw as string).trim()
+
+  // positive integer 'string' only
+  if (!/^\d+$/.test(trimmed)) {
     return { error: 'Please enter a valid item ID.' }
   }
 
-  if (itemId) {
-    const result = await checkOutItem(itemId, userId)
-    if (result?.error) return result
+  // cast it to integer
+  const itemId = parseInt(trimmed, 10)
+
+  // check for safe integer
+  if (trimmed.length > 10 || !Number.isSafeInteger(itemId)) {
+    return { error: 'Please enter a valid item ID.' }
   }
+
+  if (itemId <= 0) {
+    return { error: 'Please enter a valid item ID.' }
+  }
+
+  const result = await checkOutItem(itemId, userId)
+  if (result?.error) return result
 
   revalidatePath('/dashboard')
   return null
@@ -52,6 +76,7 @@ export async function handleDelete(formData: FormData) {
   await sessionRequired()
 
   const id = parseInt(formData.get('id') as string, 10)
-  id ? await deleteItem(id) : console.log('error')
+  if (isNaN(id) || id <= 0) throw new Error('Invalid item ID')
+  await deleteItem(id)
   revalidatePath('/dashboard')
 }
