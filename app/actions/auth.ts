@@ -1,7 +1,7 @@
 'use server'
 
 import { signIn, signOut } from '@/auth'
-import { prisma } from '@/app/lib/prisma'
+import { findUserByEmail, createUser } from '@/app/lib/db'
 import bcrypt from 'bcryptjs'
 import { AuthError } from 'next-auth'
 import { redirect } from 'next/navigation'
@@ -36,13 +36,13 @@ export async function registerAction(prevState: string | undefined, formData: Fo
   if (!name || !email || !password) return 'All fields are required.'
   if (password.length < 6) return 'Password must be at least 6 characters.'
 
-  const existing = await prisma.user.findUnique({ where: { email } })
+  const existing = await findUserByEmail(email)
   if (existing) return 'An account with that email already exists.'
 
   const hashed = await bcrypt.hash(password, 10)
 
   try {
-    await prisma.user.create({ data: { name, email, password: hashed } })
+    await createUser(name, email, hashed)
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       return 'An account with that email already exists.'

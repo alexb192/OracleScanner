@@ -1,8 +1,20 @@
 import { prisma } from "./prisma";
 import { Device } from "@/prisma/generated/prisma/client" // prisma schema enum
 
-// database functions for creating, deleting, checking out items, and fetching items. 
-// These are called from the server actions in app/actions/forms.ts which handle the form submissions from the frontend. 
+// database functions for creating, deleting, checking out items, and fetching items.
+// These are called from the server actions in app/actions/forms.ts which handle the form submissions from the frontend.
+
+// ── auth ──────────────────────────────────────────────────────────────────────
+
+// actions/auth.ts -> registerAction -> findUserByEmail
+export async function findUserByEmail(email: string) {
+  return prisma.user.findUnique({ where: { email } });
+}
+
+// actions/auth.ts -> registerAction -> createUser
+export async function createUser(name: string, email: string, hashedPassword: string) {
+  return prisma.user.create({ data: { name, email, password: hashedPassword } });
+}
 
 // actions/forms.ts -> handleSubmitItem -> createItem
 export async function createItem(deviceType: Device) {
