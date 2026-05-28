@@ -1,23 +1,24 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 
-export default auth((req: NextRequest & { auth: unknown }) => {
-  // redirects page based on login status
-  const session = (req as { auth: { user?: unknown } | null }).auth
+export default auth((req) => {
   const { nextUrl } = req
+  const session = req.auth
 
-  const isLoggedIn = !!session?.user
-  const isLoginPage = nextUrl.pathname === '/login' || nextUrl.pathname === '/register'
-  const isDashboard = nextUrl.pathname.startsWith('/dashboard')
-
-  if (isDashboard && !isLoggedIn) {
+  if (!session) {
+    // unauthenticated: only /login is allowed
+    if (nextUrl.pathname === '/login') return NextResponse.next()
     return NextResponse.redirect(new URL('/login', nextUrl))
   }
 
-  if (isLoginPage && isLoggedIn) {
-    return NextResponse.redirect(new URL('/dashboard', nextUrl))
+  if (!session.user.admin) {
+    // non-admin: only /scanner is allowed
+    if (nextUrl.pathname === '/scanner') return NextResponse.next()
+    return NextResponse.redirect(new URL('/scanner', nextUrl))
   }
+
+  // admin: unrestricted
+  return NextResponse.next()
 })
 
 export const config = {

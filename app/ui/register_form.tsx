@@ -2,10 +2,9 @@
 
 import { useActionState } from 'react'
 import { registerAction } from '@/app/actions/auth'
-import Link from 'next/link'
 
-export default function RegisterPage() {
-  const [error, formAction, pending] = useActionState(registerAction, undefined)
+export default function RegisterForm() {
+  const [state, formAction, pending] = useActionState(registerAction, null)
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center gap-6 bg-zinc-50 font-sans dark:bg-black">
@@ -33,7 +32,12 @@ export default function RegisterPage() {
             required
             className="w-full text-sm text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-zinc-400"
           />
-          {error && <p className="text-red-500 text-xs">{error}</p>}
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" name="admin" className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 accent-zinc-900 dark:accent-white" />
+            <span className="text-sm text-zinc-600 dark:text-zinc-400">Administrator</span>
+          </label>
+          {state && 'error' in state && <p className="text-red-500 text-xs">{state.error}</p>}
+          {state && 'success' in state && <p className="text-green-600 text-xs">{state.success}</p>}
           <button
             type="submit"
             disabled={pending}
@@ -42,12 +46,6 @@ export default function RegisterPage() {
             Create Account
           </button>
         </form>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-4 text-center">
-          Already have an account?{' '}
-          <Link href="/login" className="underline hover:text-zinc-900 dark:hover:text-white">
-            Sign In
-          </Link>
-        </p>
       </div>
     </div>
   )

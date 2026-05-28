@@ -12,8 +12,8 @@ export async function findUserByEmail(email: string) {
 }
 
 // actions/auth.ts -> registerAction -> createUser
-export async function createUser(name: string, email: string, hashedPassword: string) {
-  return prisma.user.create({ data: { name, email, password: hashedPassword } });
+export async function createUser(name: string, email: string, hashedPassword: string, admin: boolean) {
+  return prisma.user.create({ data: { name, email, password: hashedPassword, admin } });
 }
 
 // actions/forms.ts -> handleSubmitItem -> createItem

@@ -2,7 +2,6 @@
 
 import { useActionState } from 'react'
 import { loginAction } from '@/app/actions/auth'
-import Link from 'next/link'
 
 export default function LoginPage() {
   const [error, formAction, pending] = useActionState(loginAction, undefined)
@@ -35,12 +34,6 @@ export default function LoginPage() {
             Sign In
           </button>
         </form>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-4 text-center">
-          No account?{' '}
-          <Link href="/register" className="underline hover:text-zinc-900 dark:hover:text-white">
-            Register
-          </Link>
-        </p>
       </div>
     </div>
   )

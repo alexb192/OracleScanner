@@ -27,6 +27,14 @@ export default async function Header() {
             >
               Scanner
             </Link>
+            {session?.user.admin && (
+              <Link
+                href="/accounts"
+                className="rounded-md px-3 py-1.5 text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+              >
+                Accounts
+              </Link>
+            )}
           </nav>
         </div>
 
@@ -36,6 +44,12 @@ export default async function Header() {
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
               {session.user.name ?? session.user.email}
             </span>
+            {session.user.admin && (
+              <>
+                <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700" />
+                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Admin</span>
+              </>
+            )}
             <form action={logoutAction}>
               <button
                 type="submit"
