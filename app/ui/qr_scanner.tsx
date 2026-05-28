@@ -2,7 +2,9 @@
 
 import { useRef, useEffect, useActionState, useState, startTransition } from 'react'
 import jsQR from 'jsqr'
-import { handleCheckOutById } from '@/app/actions/forms'
+import { handleScanById } from '@/app/actions/forms'
+
+type Mode = 'checkOut' | 'checkIn'
 
 export default function QRScanner() {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -11,11 +13,18 @@ export default function QRScanner() {
   const rafRef = useRef<number>(0)
   const onPlayingRef = useRef<(() => void) | null>(null)
 
+  const [mode, setMode] = useState<Mode>('checkOut')
+  const modeRef = useRef<Mode>('checkOut')
+  modeRef.current = mode
+  // Captured at scan time so status text reflects what was actually submitted,
+  // not whatever the toggle shows if the user switches during the 3s display window.
+  const verbRef = useRef<string>('out')
+
   // hasScanned distinguishes "initial null state" from "action returned null (success)"
   const [hasScanned, setHasScanned] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
 
-  const [state, formAction, pending] = useActionState(handleCheckOutById, null)
+  const [state, formAction, pending] = useActionState(handleScanById, null)
 
   // Ref so the scan-loop closure always calls the latest formAction without
   // making it a dependency of the camera useEffect.
@@ -49,9 +58,11 @@ export default function QRScanner() {
           // The video stream keeps running.
           const itemId = parseInt(result.data.trim(), 10)
           scanningRef.current = false
+          verbRef.current = modeRef.current === 'checkOut' ? 'out' : 'in'
           setHasScanned(true)
           const fd = new FormData()
           fd.set('itemId', String(itemId))
+          fd.set('mode', modeRef.current)
           startTransition(() => formActionRef.current(fd))
           return
         }
@@ -82,9 +93,11 @@ export default function QRScanner() {
           return
         }
         video.srcObject = stream
-        video.play().catch(() =>
+        video.play().catch((err: DOMException) => {
+          // AbortError fires when play() is interrupted by navigation or unmount — not a real error.
+          if (err.name === 'AbortError') return
           setCameraError('Could not start video playback. Try reloading the page.')
-        )
+        })
         // Begin scanning only once the stream is actively playing so we
         // never read a frozen frame from a previous session.
         const onPlaying = () => startScanning()
@@ -145,10 +158,10 @@ export default function QRScanner() {
     statusText = cameraError
     statusColor = 'text-red-400'
   } else if (isSubmitting) {
-    statusText = 'Checking out…'
+    statusText = `Checking ${verbRef.current}…`
     statusColor = 'text-zinc-500 dark:text-zinc-400'
   } else if (isSuccess) {
-    statusText = 'Item checked out!'
+    statusText = `Item checked ${verbRef.current}!`
     statusColor = 'text-green-400'
   } else if (isActionError) {
     statusText = state!.error
@@ -163,6 +176,34 @@ export default function QRScanner() {
       <h1 className="text-zinc-900 dark:text-white font-medium text-sm mb-4">
         Scan QR Code
       </h1>
+
+      {/* Mode toggle */}
+      <div className="flex rounded-md overflow-hidden border border-zinc-200 dark:border-zinc-700 mb-4 text-sm font-medium">
+        <button
+          type="button"
+          onClick={() => setMode('checkOut')}
+          disabled={isSubmitting}
+          className={`flex-1 py-2 transition-colors ${
+            mode === 'checkOut'
+              ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
+              : 'bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+          }`}
+        >
+          Check Out
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode('checkIn')}
+          disabled={isSubmitting}
+          className={`flex-1 py-2 transition-colors ${
+            mode === 'checkIn'
+              ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
+              : 'bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+          }`}
+        >
+          Check In
+        </button>
+      </div>
 
       <div className="rounded-md overflow-hidden bg-black aspect-square">
         <video

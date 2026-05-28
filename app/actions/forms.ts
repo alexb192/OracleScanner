@@ -15,6 +15,8 @@ async function sessionRequired() {
   return session.user.id
 }
 
+// --- Dashboard actions ---
+
 // /dashboard Create Item form action
 export async function handleSubmitItem(formData: FormData) {
   await sessionRequired()
@@ -23,6 +25,32 @@ export async function handleSubmitItem(formData: FormData) {
   await createItem(type)
   revalidatePath('/dashboard')
 }
+
+// /dashboard Items Table delete button action
+export async function handleDelete(
+  _prevState: { error: string } | null,
+  formData: FormData
+): Promise<{ error: string } | null> {
+  try {
+    await sessionRequired()
+  } catch {
+    return { error: 'Session expired. Please sign in again.' }
+  }
+
+  const id = parseInt(formData.get('id') as string, 10)
+  if (isNaN(id) || id <= 0 || id > 2_147_483_647) return { error: 'Invalid item ID.' }
+
+  try {
+    await deleteItem(id)
+  } catch {
+    return { error: 'Failed to delete item.' }
+  }
+
+  revalidatePath('/dashboard')
+  return null
+}
+
+// --- Check-out / Check-in / Scanner dispatcher ---
 
 // /dashboard Items Table inline check out action
 export async function handleCheckOutById(
@@ -75,26 +103,13 @@ export async function handleCheckInById(
   return null
 }
 
-// //dashboard Items Table delete button action
-export async function handleDelete(
-  _prevState: { error: string } | null,
+// /scanner QR scan dispatcher — routes to check-out or check-in based on mode field
+export async function handleScanById(
+  prevState: { error: string } | null,
   formData: FormData
 ): Promise<{ error: string } | null> {
-  try {
-    await sessionRequired()
-  } catch {
-    return { error: 'Session expired. Please sign in again.' }
-  }
-
-  const id = parseInt(formData.get('id') as string, 10)
-  if (isNaN(id) || id <= 0) return { error: 'Invalid item ID.' }
-
-  try {
-    await deleteItem(id)
-  } catch {
-    return { error: 'Failed to delete item.' }
-  }
-
-  revalidatePath('/dashboard')
-  return null
+  const mode = formData.get('mode')
+  if (mode === 'checkOut') return handleCheckOutById(prevState, formData)
+  if (mode === 'checkIn')  return handleCheckInById(prevState, formData)
+  return { error: 'Invalid scan mode.' }
 }
