@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useActionState, useState, startTransition } from 'react'
 import jsQR from 'jsqr'
-import { handleSubmitCheckout } from '@/app/actions/forms'
+import { handleCheckOutById } from '@/app/actions/forms'
 
 export default function QRScanner() {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -15,7 +15,7 @@ export default function QRScanner() {
   const [hasScanned, setHasScanned] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
 
-  const [state, formAction, pending] = useActionState(handleSubmitCheckout, null)
+  const [state, formAction, pending] = useActionState(handleCheckOutById, null)
 
   // Ref so the scan-loop closure always calls the latest formAction without
   // making it a dependency of the camera useEffect.
