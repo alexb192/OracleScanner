@@ -1,7 +1,12 @@
+import { auth } from '@/auth'
+import { redirect } from 'next/navigation'
+
 export default async function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center gap-6 bg-zinc-50 font-sans dark:bg-black">
-      Hello World!
-    </div>
-  );
+
+  const session = await auth()
+
+  // redirects to the dashboard if the user is authenticated or to the login page if not
+  session ? redirect('/dashboard') : redirect('/login')
+
+  return (<></>);
 }
