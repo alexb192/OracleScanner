@@ -1,7 +1,7 @@
 'use server'
 import { revalidatePath } from 'next/cache'
 import { Device } from '@/prisma/generated/prisma/client'
-import { createItem, deleteItem, checkOutItem } from '@/app/lib/db'
+import { createItem, deleteItem, checkOutItem, checkInItem } from '@/app/lib/db'
 import { auth } from '@/auth'
 
 // server actions for handling form submissions
@@ -24,8 +24,8 @@ export async function handleSubmitItem(formData: FormData) {
   revalidatePath('/dashboard')
 }
 
-// /dashboard Check Out form action
-export async function handleSubmitCheckout(
+// /dashboard Items Table inline check out action
+export async function handleCheckOutById(
   _prevState: { error: string } | null,
   formData: FormData
 ): Promise<{ error: string } | null> {
@@ -36,47 +36,65 @@ export async function handleSubmitCheckout(
     return { error: 'Session expired. Please sign in again.' }
   }
 
-  const raw = formData.get('itemId');
+  const id = parseInt(formData.get('itemId') as string, 10)
+  if (isNaN(id) || id <= 0 || id > 2_147_483_647) return { error: 'Invalid item ID.' }
 
-  // null guard with provided error
-  if (raw === null) {
-    return { error: 'Please enter an item ID.' }
+  try {
+    const result = await checkOutItem(id, userId)
+    if (result?.error) return result
+  } catch {
+    return { error: 'An unexpected error occurred.' }
   }
 
-  // string type assertion.
-  const trimmed = (raw as string).trim()
+  revalidatePath('/dashboard')
+  return null
+}
 
-  // positive integer 'string' only
-  if (!/^\d+$/.test(trimmed)) {
-    return { error: 'Please enter a valid item ID.' }
+// /dashboard Items Table inline check in action
+export async function handleCheckInById(
+  _prevState: { error: string } | null,
+  formData: FormData
+): Promise<{ error: string } | null> {
+  try {
+    await sessionRequired()
+  } catch {
+    return { error: 'Session expired. Please sign in again.' }
   }
 
-  // cast it to integer
-  const itemId = parseInt(trimmed, 10)
+  const id = parseInt(formData.get('itemId') as string, 10)
+  if (isNaN(id) || id <= 0 || id > 2_147_483_647) return { error: 'Invalid item ID.' }
 
-  // check for safe integer
-  if (trimmed.length > 10 || !Number.isSafeInteger(itemId)) {
-    return { error: 'Please enter a valid item ID.' }
+  try {
+    const result = await checkInItem(id)
+    if (result?.error) return result
+  } catch {
+    return { error: 'An unexpected error occurred.' }
   }
-
-  if (itemId <= 0) {
-    return { error: 'Please enter a valid item ID.' }
-  }
-
-  const result = await checkOutItem(itemId, userId)
-  if (result?.error) return result
 
   revalidatePath('/dashboard')
   return null
 }
 
 // //dashboard Items Table delete button action
-export async function handleDelete(formData: FormData) {
-  // protect against post request without user session or id
-  await sessionRequired()
+export async function handleDelete(
+  _prevState: { error: string } | null,
+  formData: FormData
+): Promise<{ error: string } | null> {
+  try {
+    await sessionRequired()
+  } catch {
+    return { error: 'Session expired. Please sign in again.' }
+  }
 
   const id = parseInt(formData.get('id') as string, 10)
-  if (isNaN(id) || id <= 0) throw new Error('Invalid item ID')
-  await deleteItem(id)
+  if (isNaN(id) || id <= 0) return { error: 'Invalid item ID.' }
+
+  try {
+    await deleteItem(id)
+  } catch {
+    return { error: 'Failed to delete item.' }
+  }
+
   revalidatePath('/dashboard')
+  return null
 }

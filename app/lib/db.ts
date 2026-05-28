@@ -56,6 +56,26 @@ export async function checkOutItem(id: number, userId: string): Promise<{ error:
     return null;
 }
 
+// actions/forms.ts -> handleCheckInById -> checkInItem
+export async function checkInItem(id: number): Promise<{ error: string } | null> {
+    const result = await prisma.item.updateMany({
+        where: { id, checkedOut: true },
+        data: {
+            checkedOut: false,
+            dateCheckedOut: null,
+            checkedOutById: null
+        }
+    });
+
+    if (result.count === 0) {
+        const item = await prisma.item.findUnique({ where: { id } });
+        if (!item) return { error: 'This item does not exist.' };
+        return { error: 'This item is not currently checked out.' };
+    }
+
+    return null;
+}
+
 // dashboard/page.tsx -> ItemsTableWrapper -> fetchItems
 export async function fetchItems() {
     return prisma.item.findMany({
