@@ -1,7 +1,7 @@
 import { fetchItems } from '@/app/lib/db'
 import ItemsTable from './items_table'
 
-export default async function ItemsTableWrapper() {
+export default async function ItemsTableWrapper({ isAdmin }: { isAdmin: boolean }) {
   const items = await fetchItems()
   const serialized = items.map(item => ({
     id: item.id,
@@ -12,5 +12,5 @@ export default async function ItemsTableWrapper() {
       ? (item.checkedOutBy.name ?? item.checkedOutBy.email ?? '—')
       : null,
   }))
-  return <ItemsTable items={serialized} />
+  return <ItemsTable items={serialized} isAdmin={isAdmin} />
 }

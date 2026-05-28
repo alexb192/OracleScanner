@@ -12,8 +12,8 @@ export default auth((req) => {
   }
 
   if (!session.user.admin) {
-    // non-admin: only /scanner is allowed
-    if (nextUrl.pathname === '/scanner') return NextResponse.next()
+    // non-admin: /scanner and /dashboard are allowed
+    if (nextUrl.pathname === '/scanner' || nextUrl.pathname === '/dashboard') return NextResponse.next()
     return NextResponse.redirect(new URL('/scanner', nextUrl))
   }
 

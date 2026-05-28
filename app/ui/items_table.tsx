@@ -15,7 +15,7 @@ const checkboxClass = "appearance-none w-4 h-4 rounded-sm border border-zinc-300
 
 const actionBtnClass = "px-3 py-1 text-sm font-medium rounded-sm border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 
-export default function ItemsTable({ items }: { items: Item[] }) {
+export default function ItemsTable({ items, isAdmin }: { items: Item[], isAdmin: boolean }) {
     const [selectedId, setSelectedId] = useState<number | null>(null)
     const [checkOutState, checkOutAction, checkOutPending] = useActionState(handleCheckOutById, null)
     const [checkInState, checkInAction, checkInPending] = useActionState(handleCheckInById, null)
@@ -40,12 +40,13 @@ export default function ItemsTable({ items }: { items: Item[] }) {
                 <form action={handleSubmitItem} className="flex items-center gap-2">
                     <select
                         name="device"
-                        className="text-sm text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-600 rounded-sm px-2 py-1 focus:outline-none focus:ring-2 focus:ring-zinc-400 cursor-pointer"
+                        disabled={!isAdmin}
+                        className="text-sm text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-600 rounded-sm px-2 py-1 focus:outline-none focus:ring-2 focus:ring-zinc-400 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         <option value="LAPTOP">Laptop</option>
                         <option value="TABLET">Tablet</option>
                     </select>
-                    <button type="submit" className={actionBtnClass}>+ Create</button>
+                    <button type="submit" disabled={!isAdmin} className={actionBtnClass}>+ Create</button>
                 </form>
 
                 {/* Divider */}
@@ -76,7 +77,7 @@ export default function ItemsTable({ items }: { items: Item[] }) {
                     <input type="hidden" name="id" value={selectedId ?? ''} />
                     <button
                         type="submit"
-                        disabled={!selectedId || deletePending}
+                        disabled={!isAdmin || !selectedId || deletePending}
                         className={actionBtnClass}
                     >
                         Delete
