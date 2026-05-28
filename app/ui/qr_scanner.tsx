@@ -12,6 +12,7 @@ export default function QRScanner() {
   const scanningRef = useRef(false)
   const rafRef = useRef<number>(0)
   const onPlayingRef = useRef<(() => void) | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
 
   const [mode, setMode] = useState<Mode>('checkOut')
   const modeRef = useRef<Mode>('checkOut')
@@ -84,12 +85,20 @@ export default function QRScanner() {
       return
     }
 
+    let cancelled = false
+
     navigator.mediaDevices
       .getUserMedia({ video: { facingMode: 'environment' } })
       .then((stream) => {
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop())
+          return
+        }
+        streamRef.current = stream
         const video = videoRef.current
         if (!video) {
           stream.getTracks().forEach((t) => t.stop())
+          streamRef.current = null
           return
         }
         video.srcObject = stream
@@ -113,6 +122,7 @@ export default function QRScanner() {
       })
 
     return () => {
+      cancelled = true
       scanningRef.current = false
       cancelAnimationFrame(rafRef.current)
       const video = videoRef.current
@@ -121,10 +131,11 @@ export default function QRScanner() {
           video.removeEventListener('playing', onPlayingRef.current)
           onPlayingRef.current = null
         }
-        if (video.srcObject) {
-          ;(video.srcObject as MediaStream).getTracks().forEach((t) => t.stop())
-          video.srcObject = null
-        }
+        video.srcObject = null
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop())
+        streamRef.current = null
       }
     }
   }, [])
