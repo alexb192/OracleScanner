@@ -7,7 +7,7 @@ export default async function ItemsTableWrapper({ isAdmin }: { isAdmin: boolean 
     id: item.id,
     model: item.model,
     checkedOut: item.checkedOut,
-    checkedOutDate: item.dateCheckedOut?.toLocaleDateString('en-US') ?? null,
+    checkedOutDate: item.dateCheckedOut?.toISOString().slice(0, 10) ?? null,
     checkedOutBy: item.checkedOutBy
       ? (item.checkedOutBy.name ?? item.checkedOutBy.email ?? '—')
       : null,

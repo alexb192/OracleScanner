@@ -15,8 +15,30 @@ const checkboxClass = "appearance-none w-4 h-4 rounded-sm border border-zinc-300
 
 const actionBtnClass = "px-3 py-1 text-sm font-medium rounded-sm border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 
+type SortKey = keyof Omit<Item, 'id'> | 'id'
+
 export default function ItemsTable({ items, isAdmin }: { items: Item[], isAdmin: boolean }) {
     const [selectedId, setSelectedId] = useState<number | null>(null)
+
+    // state is auto set to 'sort by id, ascending'
+    const [sortKey, setSortKey] = useState<SortKey | null>('id')
+    const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+
+    function handleSort(key: SortKey) {
+        if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+        else { setSortKey(key); setSortDir('asc') }
+    }
+
+    const sortedItems = sortKey
+        ? [...items].sort((a, b) => {
+            const av = a[sortKey] ?? ''
+            const bv = b[sortKey] ?? ''
+            const cmp = typeof av === 'string' && typeof bv === 'string'
+                ? av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' })
+                : Number(av) - Number(bv)
+            return cmp * (sortDir === 'asc' ? 1 : -1)
+        })
+        : items
     const [checkOutState, checkOutAction, checkOutPending] = useActionState(handleCheckOutById, null)
     const [checkInState, checkInAction, checkInPending] = useActionState(handleCheckInById, null)
     const [deleteState, deleteAction, deletePending] = useActionState(handleDelete, null)
@@ -96,15 +118,23 @@ export default function ItemsTable({ items, isAdmin }: { items: Item[], isAdmin:
                     <thead className="text-sm text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
                         <tr>
                             <th scope="col" className="px-4 py-3 w-px"></th>
-                            <th scope="col" className="px-6 py-3 font-medium">ID</th>
-                            <th scope="col" className="px-6 py-3 font-medium">Model</th>
-                            <th scope="col" className="px-6 py-3 font-medium">Checked Out</th>
-                            <th scope="col" className="px-6 py-3 font-medium">Checked Out Date</th>
-                            <th scope="col" className="px-6 py-3 font-medium">Checked Out By</th>
+                            {([['id', 'ID'], ['model', 'Model'], ['checkedOut', 'Checked Out'], ['checkedOutDate', 'Checked Out Date'], ['checkedOutBy', 'Checked Out By']] as [SortKey, string][]).map(([key, label]) => (
+                                <th
+                                    key={key}
+                                    scope="col"
+                                    onClick={() => handleSort(key)}
+                                    className="px-6 py-3 font-medium cursor-pointer select-none hover:text-zinc-900 dark:hover:text-white"
+                                >
+                                    {label}
+                                    <span className="ml-1 text-xs">
+                                        {sortKey === key ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}
+                                    </span>
+                                </th>
+                            ))}
                         </tr>
                     </thead>
                     <tbody>
-                        {items.map((item) => (
+                        {sortedItems.map((item) => (
                             <tr
                                 key={item.id}
                                 onClick={() => setSelectedId(selectedId === item.id ? null : item.id)}
