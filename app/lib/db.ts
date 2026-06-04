@@ -25,7 +25,7 @@ export async function createItem(deviceType: Device) {
   });
 }
 
-// actions/forms.ts -> handleDelete -> deleteItem
+// actions/forms.ts -> deleteItem -> handleDeleteItem
 export async function deleteItem(id: number){
     await prisma.item.delete({
         where: {

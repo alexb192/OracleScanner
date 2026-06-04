@@ -27,7 +27,7 @@ export async function handleSubmitItem(formData: FormData) {
 }
 
 // /dashboard Items Table delete button action
-export async function handleDelete(
+export async function handleDeleteItem(
   _prevState: { error: string } | null,
   formData: FormData
 ): Promise<{ error: string } | null> {
