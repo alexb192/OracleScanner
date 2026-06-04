@@ -1,167 +1,123 @@
 'use client'
 
 import { useState, useActionState, useEffect } from 'react'
-import { handleDeleteItem, handleCheckOutById, handleCheckInById, handleSubmitItem } from '@/app/actions/forms'
+import { registerAction } from '../actions/auth'
 
-type Item = {
-    id: number
-    model: string
-    checkedOut: boolean
-    checkedOutDate: string | null
-    checkedOutBy: string | null
+type User = {
+    id: string,
+    name: string | null,
+    email: string | null,
+    admin: boolean
 }
 
 const checkboxClass = "appearance-none w-4 h-4 rounded-sm border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 checked:bg-zinc-700 dark:checked:bg-zinc-300 checked:border-zinc-700 dark:checked:border-zinc-300 cursor-pointer transition-colors [background-image:none] checked:[background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><polyline points=%222,8 6,12 14,4%22 stroke=%22white%22 stroke-width=%222%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>')]"
-
 const actionBtnClass = "px-3 py-1 text-sm font-medium rounded-sm border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 
-type SortKey = keyof Omit<Item, 'id'> | 'id'
+type SortKey = keyof User
 
-export default function ItemsTable({ items, isAdmin }: { items: Item[], isAdmin: boolean }) {
-    const [selectedId, setSelectedId] = useState<number | null>(null)
+export default function UsersTable({ users }: { users: User[] }) {
+    const [registerState, registerFormAction] = useActionState(registerAction, null)
+    const [formKey, setFormKey] = useState(0)
+    const [selectedId, setSelectedId] = useState<string | null>(null)
 
-    // state is auto set to 'sort by id, ascending'
-    const [sortKey, setSortKey] = useState<SortKey | null>('id')
+    useEffect(() => {
+        // increments form key to reset form state and clear inputs after successful registration
+        if (registerState && 'success' in registerState) setFormKey(k => k + 1)
+    }, [registerState])
+    const [sortKey, setSortKey] = useState<SortKey>('id')
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
-
     function handleSort(key: SortKey) {
         if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
         else { setSortKey(key); setSortDir('asc') }
     }
 
-    const sortedItems = sortKey
-        ? [...items].sort((a, b) => {
-            const av = a[sortKey] ?? ''
-            const bv = b[sortKey] ?? ''
-            const cmp = typeof av === 'string' && typeof bv === 'string'
-                ? av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' })
-                : Number(av) - Number(bv)
-            return cmp * (sortDir === 'asc' ? 1 : -1)
-        })
-        : items
-    const [checkOutState, checkOutAction, checkOutPending] = useActionState(handleCheckOutById, null)
-    const [checkInState, checkInAction, checkInPending] = useActionState(handleCheckInById, null)
-    const [deleteState, deleteAction, deletePending] = useActionState(handleDeleteItem, null)
-
-    // clear selected item if it was deleted or someone else changed a value.
-    useEffect(() => {
-        if (selectedId !== null && !items.some(item => item.id === selectedId)) {
-            setSelectedId(null)
-        }
-    }, [items, selectedId])
-
-    const selectedItem = items.find(item => item.id === selectedId)
+    const sortedUsers = [...users].sort((a, b) => {
+        const av = a[sortKey] ?? ''
+        const bv = b[sortKey] ?? ''
+        const cmp = typeof av === 'string' && typeof bv === 'string'
+            ? av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' })
+            : Number(av) - Number(bv)
+        return cmp * (sortDir === 'asc' ? 1 : -1)
+    })
 
     return (
-        <div className="bg-white dark:bg-zinc-900 shadow-sm rounded-md border border-zinc-200 dark:border-zinc-700">
+    <div className="bg-white dark:bg-zinc-900 shadow-sm rounded-md border border-zinc-200 dark:border-zinc-700">
+    {/* Toolbar */}
+    <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
 
-            {/* Toolbar */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
+        {/* Create User -- Name: string, Email: string, Password: string, Admin: boolean */}
+        <form key={formKey} action={registerFormAction} className="flex items-center gap-1.5 w-full">
+            <input type="text" name="name" placeholder="Name" className="w-40 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
+            <input type="email" name="email" placeholder="Email" className="w-40 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
+            <input type="password" name="password" placeholder="Password" className="w-40 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
+            <label className="flex items-center gap-1 text-sm text-zinc-700 dark:text-zinc-30₀">
+                Admin
+                <input type="checkbox" name="admin" className={checkboxClass} />
+            </label>
+            <div className="w-px dark:bg-zinc-700 ml-auto" /> {/* spacer */}
+            {registerState && 'error' in registerState && (
+                <span title={registerState.error} className="text-amber-500 cursor-default select-none">⚠</span>
+            )}
+            {registerState && 'success' in registerState && (
+                <span title={registerState.success} className="text-green-500 cursor-default select-none">✓</span>
+            )}
+            <button type="submit" className={actionBtnClass}>+ Create</button>
+        </form>
+    </div>
 
-                {/* Create group */}
-                <form action={handleSubmitItem} className="flex items-center gap-2">
-                    <select
-                        name="device"
-                        disabled={!isAdmin}
-                        className="text-sm text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-600 rounded-sm px-2 py-1 focus:outline-none focus:ring-2 focus:ring-zinc-400 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+    {/* Table */}
+    <table className="w-full text-sm text-left rtl:text-right text-zinc-700 dark:text-zinc-300">
+        <thead className="text-sm text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
+            <tr>
+                {(
+                    [
+                        ['id', 'ID'],
+                        ['name', 'Name'],
+                        ['email', 'Email'],
+                        ['admin', 'Admin']
+                    ] as [SortKey, string][]
+                ).map(([key, label]) => (
+                    <th
+                        key={key}
+                        scope="col"
+                        onClick={() => handleSort(key)}
+                        className="px-6 py-3 font-medium cursor-pointer select-none hover:text-zinc-900 dark:hover:text-white"
                     >
-                        <option value="LAPTOP">Laptop</option>
-                        <option value="TABLET">Tablet</option>
-                    </select>
-                    <button type="submit" disabled={!isAdmin} className={actionBtnClass}>+ Create</button>
-                </form>
-
-                {/* Divider */}
-                <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1" />
-
-                {/* Selection-dependent group */}
-                <form action={checkOutAction}>
-                    <input type="hidden" name="itemId" value={selectedId ?? ''} />
-                    <button
-                        type="submit"
-                        disabled={!selectedId || selectedItem?.checkedOut || checkOutPending}
-                        className={actionBtnClass}
-                    >
-                        Check Out
-                    </button>
-                </form>
-                <form action={checkInAction}>
-                    <input type="hidden" name="itemId" value={selectedId ?? ''} />
-                    <button
-                        type="submit"
-                        disabled={!selectedId || !selectedItem?.checkedOut || checkInPending}
-                        className={actionBtnClass}
-                    >
-                        Check In
-                    </button>
-                </form>
-                <form action={deleteAction}>
-                    <input type="hidden" name="id" value={selectedId ?? ''} />
-                    <button
-                        type="submit"
-                        disabled={!isAdmin || !selectedId || deletePending}
-                        className={actionBtnClass}
-                    >
-                        Delete
-                    </button>
-                </form>
-                {(checkOutState?.error ?? checkInState?.error ?? deleteState?.error) && (
-                    <p aria-live="polite" className="text-sm text-red-500">
-                        {checkOutState?.error ?? checkInState?.error ?? deleteState?.error}
-                    </p>
-                )}
-            </div>
-
-            {/* Table */}
-            <div className="relative overflow-x-auto">
-                <table className="w-full text-sm text-left rtl:text-right text-zinc-700 dark:text-zinc-300">
-                    <thead className="text-sm text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-                        <tr>
-                            <th scope="col" className="px-4 py-3 w-px"></th>
-                            {([['id', 'ID'], ['model', 'Model'], ['checkedOut', 'Checked Out'], ['checkedOutDate', 'Checked Out Date'], ['checkedOutBy', 'Checked Out By']] as [SortKey, string][]).map(([key, label]) => (
-                                <th
-                                    key={key}
-                                    scope="col"
-                                    onClick={() => handleSort(key)}
-                                    className="px-6 py-3 font-medium cursor-pointer select-none hover:text-zinc-900 dark:hover:text-white"
-                                >
-                                    {label}
-                                    <span className="ml-1 text-xs">
-                                        {sortKey === key ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}
-                                    </span>
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {sortedItems.map((item) => (
-                            <tr
-                                key={item.id}
-                                onClick={() => setSelectedId(selectedId === item.id ? null : item.id)}
-                                className={`border-b border-zinc-200 dark:border-zinc-700 last:border-0 cursor-pointer transition-colors ${
-                                    selectedId === item.id
-                                        ? 'bg-zinc-100 dark:bg-zinc-800'
-                                        : 'bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
-                                }`}
-                            >
-                                <td className="px-4 py-4">
-                                    <input
-                                        type="checkbox"
-                                        readOnly
-                                        checked={selectedId === item.id}
-                                        className={checkboxClass}
-                                    />
-                                </td>
-                                <th scope="row" className="px-6 py-4 font-medium text-zinc-900 dark:text-white whitespace-nowrap">{item.id}</th>
-                                <td className="px-6 py-4">{item.model}</td>
-                                <td className="px-6 py-4">{item.checkedOut ? 'Yes' : 'No'}</td>
-                                <td className="px-6 py-4">{item.checkedOutDate ?? '—'}</td>
-                                <td className="px-6 py-4">{item.checkedOutBy ?? '—'}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                        {label}
+                        <span className="ml-1 text-xs">
+                            {sortKey === key ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}
+                        </span>
+                    </th>
+                ))}
+            </tr>
+        </thead>
+        <tbody>
+            {sortedUsers.map((user) => (
+                <tr
+                    key={user.id}
+                    onClick={() => setSelectedId(selectedId === user.id ? null : user.id)}
+                    className={`border-b border-zinc-200 dark:border-zinc-700 last:border-0 cursor-pointer transition-colors ${
+                        selectedId === user.id
+                            ? 'bg-zinc-100 dark:bg-zinc-800'
+                            : 'bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
+                    }`}
+                >
+                    <td className="px-6 py-4">
+                        {user.id}
+                    </td>
+                    <td className="px-6 py-4">
+                        {user.name ?? "—"}
+                    </td>
+                    <td className="px-6 py-4">
+                        {user.email ?? "—"}
+                    </td>
+                    <td className="px-6 py-4">
+                        {user.admin ? 'Yes' : 'No'}
+                    </td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+    </div>
     )
 }

@@ -5,6 +5,7 @@ import { findUserByEmail, createUser } from '@/app/lib/db'
 import bcrypt from 'bcryptjs'
 import { AuthError } from 'next-auth'
 import { Prisma } from '@/prisma/generated/prisma/edge'
+import { revalidatePath } from 'next/cache'
 
 // actions for login, register, logout - these are called from the login and register page forms
 // and handle the server side logic for those forms. They return error messages if there are any issues, 
@@ -35,7 +36,7 @@ export async function registerAction(_prevState: RegisterState, formData: FormDa
   const name = formData.get('name') as string
   const email = formData.get('email') as string
   const password = formData.get('password') as string
-  const admin = formData.get('admin') === 'on'
+  const admin = formData.get('admin') !== null // true if checked, false if omitted
 
   if (!name || !email || !password) return { error: 'All fields are required.' }
   if (password.length < 6) return { error: 'Password must be at least 6 characters.' }
@@ -54,6 +55,7 @@ export async function registerAction(_prevState: RegisterState, formData: FormDa
     throw error
   }
 
+  revalidatePath('/accounts')
   return { success: 'Account created successfully.' }
 }
 

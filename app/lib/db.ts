@@ -86,3 +86,26 @@ export async function fetchItems() {
         }
     });
 }
+
+export async function fetchUsers() {
+    // id            String    @id @default(cuid())
+    // name          String?
+    // email         String?   @unique
+    // emailVerified DateTime?
+    // image         String?
+    // password      String?
+    // admin         Boolean   @default(false)
+    // accounts      Account[]
+    // sessions      Session[]
+    // items         Item[]
+
+    // only return id, name, email, and admin status
+    return prisma.user.findMany({
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            admin: true
+        }
+    });
+}
