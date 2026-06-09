@@ -18,7 +18,6 @@ type SortKey = keyof User
 export default function UsersTable({ users }: { users: User[] }) {
     const [registerState, registerFormAction] = useActionState(registerAction, null)
     const [formKey, setFormKey] = useState(0)
-    const [selectedId, setSelectedId] = useState<string | null>(null)
 
     useEffect(() => {
         // increments form key to reset form state and clear inputs after successful registration
@@ -93,12 +92,7 @@ export default function UsersTable({ users }: { users: User[] }) {
             {sortedUsers.map((user) => (
                 <tr
                     key={user.id}
-                    onClick={() => setSelectedId(selectedId === user.id ? null : user.id)}
-                    className={`border-b border-zinc-200 dark:border-zinc-700 last:border-0 cursor-pointer transition-colors ${
-                        selectedId === user.id
-                            ? 'bg-zinc-100 dark:bg-zinc-800'
-                            : 'bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
-                    }`}
+                    className="border-b border-zinc-200 dark:border-zinc-700 last:border-0 transition-colors bg-white dark:bg-zinc-900"
                 >
                     <td className="px-6 py-4 hidden sm:table-cell">
                         {user.id}
