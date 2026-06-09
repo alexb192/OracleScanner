@@ -32,7 +32,6 @@ export async function deleteItem(id: number){
             id: id
         }
     });
-    console.log(`deleted ${id}`);
 }
 
 // actions/forms.ts -> handleSubmitCheckout -> checkOutItem
