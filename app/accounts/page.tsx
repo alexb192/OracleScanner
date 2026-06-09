@@ -12,7 +12,7 @@ export default async function AccountsPage() {
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center gap-6 bg-zinc-50 font-sans dark:bg-black">
-      <div className="flex flex-col gap-6 w-full max-w-3xl px-4">
+      <div className="flex flex-col gap-6 w-full max-w-3xl px-4 py-4">
         <Suspense fallback={<UsersTableSkeleton />}>
           <UsersTableWrapper />
         </Suspense>

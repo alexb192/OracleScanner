@@ -56,65 +56,66 @@ export default function ItemsTable({ items, isAdmin }: { items: Item[], isAdmin:
         <div className="bg-white dark:bg-zinc-900 shadow-sm rounded-md border border-zinc-200 dark:border-zinc-700">
 
             {/* Toolbar */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
+            <div className="flex flex-col px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
+                <div className="flex flex-wrap items-center gap-2">
 
-                {/* Create group */}
-                <form action={handleSubmitItem} className="flex items-center gap-2">
-                    <select
-                        name="device"
-                        disabled={!isAdmin}
-                        className="text-sm text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-600 rounded-sm px-2 py-1 focus:outline-none focus:ring-2 focus:ring-zinc-400 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                        <option value="LAPTOP">Laptop</option>
-                        <option value="TABLET">Tablet</option>
-                    </select>
-                    <button type="submit" disabled={!isAdmin} className={actionBtnClass}>+ Create</button>
-                </form>
+                    {/* Create group */}
+                    <form action={handleSubmitItem} className="flex items-center gap-2">
+                        <select
+                            name="device"
+                            disabled={!isAdmin}
+                            className="text-sm text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-600 rounded-sm px-2 py-1 focus:outline-none focus:ring-2 focus:ring-zinc-400 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                            <option value="LAPTOP">Laptop</option>
+                            <option value="TABLET">Tablet</option>
+                        </select>
+                        <button type="submit" disabled={!isAdmin} className={actionBtnClass}>+ Create</button>
+                    </form>
 
-                {/* Divider */}
-                <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1" />
+                    {/* Divider */}
+                    <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1" />
 
-                {/* Selection-dependent group */}
-                <form action={checkOutAction}>
-                    <input type="hidden" name="itemId" value={selectedId ?? ''} />
-                    <button
-                        type="submit"
-                        disabled={!selectedId || selectedItem?.checkedOut || checkOutPending}
-                        className={actionBtnClass}
-                    >
-                        Check Out
-                    </button>
-                </form>
-                <form action={checkInAction}>
-                    <input type="hidden" name="itemId" value={selectedId ?? ''} />
-                    <button
-                        type="submit"
-                        disabled={!selectedId || !selectedItem?.checkedOut || checkInPending}
-                        className={actionBtnClass}
-                    >
-                        Check In
-                    </button>
-                </form>
-                <form action={deleteAction}>
-                    <input type="hidden" name="id" value={selectedId ?? ''} />
-                    <button
-                        type="submit"
-                        disabled={!isAdmin || !selectedId || deletePending}
-                        className={actionBtnClass}
-                    >
-                        Delete
-                    </button>
-                </form>
+                    {/* Selection-dependent group */}
+                    <form action={checkOutAction}>
+                        <input type="hidden" name="itemId" value={selectedId ?? ''} />
+                        <button
+                            type="submit"
+                            disabled={!selectedId || selectedItem?.checkedOut || checkOutPending}
+                            className={actionBtnClass}
+                        >
+                            Check Out
+                        </button>
+                    </form>
+                    <form action={checkInAction}>
+                        <input type="hidden" name="itemId" value={selectedId ?? ''} />
+                        <button
+                            type="submit"
+                            disabled={!selectedId || !selectedItem?.checkedOut || checkInPending}
+                            className={actionBtnClass}
+                        >
+                            Check In
+                        </button>
+                    </form>
+                    <form action={deleteAction}>
+                        <input type="hidden" name="id" value={selectedId ?? ''} />
+                        <button
+                            type="submit"
+                            disabled={!isAdmin || !selectedId || deletePending}
+                            className={actionBtnClass}
+                        >
+                            Delete
+                        </button>
+                    </form>
+                </div>
                 {(checkOutState?.error ?? checkInState?.error ?? deleteState?.error) && (
-                    <p aria-live="polite" className="text-sm text-red-500">
+                    <p aria-live="polite" className="text-sm text-red-500 mt-1.5">
                         {checkOutState?.error ?? checkInState?.error ?? deleteState?.error}
                     </p>
                 )}
             </div>
 
             {/* Table */}
-            <div className="relative overflow-x-auto">
-                <table className="w-full text-sm text-left rtl:text-right text-zinc-700 dark:text-zinc-300">
+            <table className="w-full text-sm text-left rtl:text-right text-zinc-700 dark:text-zinc-300">
                     <thead className="text-sm text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
                         <tr>
                             <th scope="col" className="px-4 py-3 w-px"></th>
@@ -123,7 +124,7 @@ export default function ItemsTable({ items, isAdmin }: { items: Item[], isAdmin:
                                     key={key}
                                     scope="col"
                                     onClick={() => handleSort(key)}
-                                    className="px-6 py-3 font-medium cursor-pointer select-none hover:text-zinc-900 dark:hover:text-white"
+                                    className={`px-6 py-3 font-medium cursor-pointer select-none hover:text-zinc-900 dark:hover:text-white${key === 'checkedOutDate' || key === 'checkedOutBy' ? ' hidden sm:table-cell' : ''}`}
                                 >
                                     {label}
                                     <span className="ml-1 text-xs">
@@ -144,7 +145,7 @@ export default function ItemsTable({ items, isAdmin }: { items: Item[], isAdmin:
                                         : 'bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
                                 }`}
                             >
-                                <td className="px-4 py-4">
+                                <td className="px-3 py-4">
                                     <input
                                         type="checkbox"
                                         readOnly
@@ -155,13 +156,12 @@ export default function ItemsTable({ items, isAdmin }: { items: Item[], isAdmin:
                                 <th scope="row" className="px-6 py-4 font-medium text-zinc-900 dark:text-white whitespace-nowrap">{item.id}</th>
                                 <td className="px-6 py-4">{item.model}</td>
                                 <td className="px-6 py-4">{item.checkedOut ? 'Yes' : 'No'}</td>
-                                <td className="px-6 py-4">{item.checkedOutDate ?? '—'}</td>
-                                <td className="px-6 py-4">{item.checkedOutBy ?? '—'}</td>
+                                <td className="px-6 py-4 hidden sm:table-cell">{item.checkedOutDate ?? '—'}</td>
+                                <td className="px-6 py-4 hidden sm:table-cell">{item.checkedOutBy ?? '—'}</td>
                             </tr>
                         ))}
                     </tbody>
-                </table>
-            </div>
+            </table>
         </div>
     )
 }

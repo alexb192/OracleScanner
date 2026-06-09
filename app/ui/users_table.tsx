@@ -44,7 +44,7 @@ export default function UsersTable({ users }: { users: User[] }) {
     <div className="bg-white dark:bg-zinc-900 shadow-sm rounded-md border border-zinc-200 dark:border-zinc-700">
     {/* Toolbar */}
     <div className="flex flex-col px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
-        <form key={formKey} action={registerFormAction} className="flex items-center gap-1.5">
+        <form key={formKey} action={registerFormAction} className="flex flex-wrap items-center gap-1.5">
             <input type="text" name="fname" placeholder="First Name" className="w-24 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
             <input type="text" name="lname" placeholder="Last Name" className="w-24 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
             <input type="email" name="email" placeholder="Email" className="w-40 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
@@ -72,14 +72,14 @@ export default function UsersTable({ users }: { users: User[] }) {
                         ['id', 'ID'],
                         ['name', 'Name'],
                         ['email', 'Email'],
-                        ['admin', 'Admin']
+                        ['admin', 'Admin'],
                     ] as [SortKey, string][]
                 ).map(([key, label]) => (
                     <th
                         key={key}
                         scope="col"
                         onClick={() => handleSort(key)}
-                        className="px-6 py-3 font-medium cursor-pointer select-none hover:text-zinc-900 dark:hover:text-white"
+                        className={`px-6 py-3 font-medium cursor-pointer select-none hover:text-zinc-900 dark:hover:text-white${key === 'id' || key === 'email' ? ' hidden sm:table-cell' : ''}`}
                     >
                         {label}
                         <span className="ml-1 text-xs">
@@ -100,13 +100,13 @@ export default function UsersTable({ users }: { users: User[] }) {
                             : 'bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
                     }`}
                 >
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 hidden sm:table-cell">
                         {user.id}
                     </td>
                     <td className="px-6 py-4">
                         {user.name ?? "—"}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 hidden sm:table-cell">
                         {user.email ?? "—"}
                     </td>
                     <td className="px-6 py-4">

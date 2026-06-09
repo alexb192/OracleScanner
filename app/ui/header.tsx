@@ -7,30 +7,30 @@ export default async function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80">
-      <div className="flex h-14 w-full items-center justify-between px-6">
+      <div className="flex h-14 w-full items-center justify-between px-3 sm:px-6">
         {/* Left: app name + divider */}
         <div className="flex items-center gap-4">
-          <span className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+          <span className="hidden sm:inline text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
             OracleScanner
           </span>
-          <div className="h-5 w-px bg-zinc-300 dark:bg-zinc-700" />
+          <div className="hidden sm:block h-5 w-px bg-zinc-300 dark:bg-zinc-700" />
           <nav className="flex items-center gap-1">
             <Link
               href="/dashboard"
-              className="rounded-md px-3 py-1.5 text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+              className="rounded-md px-1.5 sm:px-3 py-1.5 text-xs sm:text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
             >
               Dashboard
             </Link>
             <Link
               href="/scanner"
-              className="rounded-md px-3 py-1.5 text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+              className="rounded-md px-1.5 sm:px-3 py-1.5 text-xs sm:text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
             >
               Scanner
             </Link>
             {session?.user.admin && (
               <Link
                 href="/accounts"
-                className="rounded-md px-3 py-1.5 text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+                className="rounded-md px-1.5 sm:px-3 py-1.5 text-xs sm:text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
               >
                 Accounts
               </Link>
@@ -40,14 +40,14 @@ export default async function Header() {
 
         {/* Right: user info + logout */}
         {session?.user && (
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <span className="hidden sm:inline text-xs text-zinc-500 dark:text-zinc-400">
               {session.user.name ?? session.user.email}
             </span>
             {session.user.admin && (
               <>
-                <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700" />
-                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Admin</span>
+                <div className="hidden sm:block h-4 w-px bg-zinc-300 dark:bg-zinc-700" />
+                <span className="hidden sm:inline text-xs font-medium text-zinc-500 dark:text-zinc-400">Admin</span>
               </>
             )}
             <form action={logoutAction}>
