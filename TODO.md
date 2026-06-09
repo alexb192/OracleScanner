@@ -29,3 +29,29 @@
 - [x] **`app/actions/auth.ts:8` — `revalidatePath` imported from internal Next.js path**
   `next/dist/server/web/spec-extension/revalidate` is an internal module; the rest of the codebase uses the public `next/cache` API.
   **Fix:** Change to `import { revalidatePath } from 'next/cache'`.
+
+## Code Review Findings (2026-06-09)
+
+- [x] **`app/actions/auth.ts:56` — admin privilege escalation via loose `!== null` check (security bug)**
+  `formData.get('admin') !== null` is true for any value including `""` or `"false"`, so a direct POST with `admin=` or `admin=false` silently grants admin rights.
+  **Fix:** Revert to `formData.get('admin') === 'on'`, which only accepts the exact value a browser checkbox submits.
+
+- [x] **`app/actions/auth.ts:52` — blank name bypasses required-field guard (bug)**
+  `name` is built as `` `${fname} ${lname}` `` before the `!name` check, so empty strings produce `" "` (a space) which is truthy, allowing a user to be created with a whitespace-only name.
+  **Fix:** Validate `fname` and `lname` individually before concatenating, e.g. `if (!fname.trim() || !lname.trim() || !email || !password) return { error: 'All fields are required.' }`.
+
+- [x] **`app/ui/users_table.tsx:54` — Unicode subscript zero breaks Tailwind dark-mode class (bug)**
+  The class `dark:text-zinc-30₀` contains U+2080 (subscript zero) instead of ASCII `0`, so Tailwind never generates the rule and the "Admin" label is unstyled in dark mode.
+  **Fix:** Replace `dark:text-zinc-30₀` with `dark:text-zinc-300`.
+
+- [x] **`app/ui/users_table.tsx:59` — error/success feedback is tooltip-only, invisible on touch (UX bug)**
+  Registration errors and successes are rendered as a bare `⚠` / `✓` icon with the message only in a `title` attribute, which touch devices cannot access.
+  **Fix:** Render the message as visible text alongside the icon, e.g. `<span className="text-amber-500 text-xs">{registerState.error}</span>`.
+
+- [x] **`app/actions/auth.ts:21` — underscore excluded from valid special characters (UX bug)**
+  The regex `[^\w\d\s:]` uses `\w` which already includes `_`, so `Password1_` is incorrectly rejected as lacking a special character.
+  **Fix:** Replace with `[^a-zA-Z0-9\s]` (or similar) so that `_`, `:`, and other punctuation are treated as special characters.
+
+- [x] **`app/ui/users_table.tsx:58` — spacer div has no height and is invisible (bug)**
+  `<div className="w-px dark:bg-zinc-700 ml-auto" />` has no `h-*` class; in a `flex items-center` container it collapses to zero height and renders nothing.
+  **Fix:** Add `h-5` (or `h-full`) to give the divider a visible height, or remove the element if it serves no purpose.

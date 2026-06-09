@@ -11,11 +11,26 @@ import { revalidatePath } from 'next/cache'
 // and handle the server side logic for those forms. They return error messages if there are any issues, 
 // which are then displayed on the frontend. If successful, they redirect to the appropriate page.
 
+// validate forms details
+const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+const validatePassword = (password: string): string | undefined => {
+  if (password.length < 6) return 'Password must be at least 6 characters.'
+  if (password.length > 16) return 'Password must be at most 16 characters.'
+  if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter.'
+  if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter.'
+  if (!/[^a-zA-Z0-9\s]/.test(password)) return 'Password must contain at least one special character.'
+  if (!/[0-9]/.test(password)) return 'Password must contain at least one number.'
+  if (/\s/.test(password)) return 'Password must not contain spaces.'
+}
+
 export async function loginAction(prevState: string | undefined, formData: FormData) {
+  const email = formData.get('email') as string
+  if (!validateEmail(email)) return 'Invalid email address.'
+
   // try logging in
   try {
     await signIn('credentials', {
-      email: formData.get('email'),
+      email,
       password: formData.get('password'),
       redirectTo: '/',
     })
@@ -33,13 +48,22 @@ export async function registerAction(_prevState: RegisterState, formData: FormDa
   const session = await auth()
   if (!session?.user.admin) return { error: 'Unauthorized.' }
 
-  const name = formData.get('name') as string
+  const fname = (formData.get('fname') as string)?.trim().replace(/^./, c => c.toUpperCase())
+  const lname = (formData.get('lname') as string)?.trim().replace(/^./, c => c.toUpperCase())
   const email = formData.get('email') as string
   const password = formData.get('password') as string
-  const admin = formData.get('admin') !== null // true if checked, false if omitted
+  const admin = formData.get('admin') === 'on'
 
-  if (!name || !email || !password) return { error: 'All fields are required.' }
-  if (password.length < 6) return { error: 'Password must be at least 6 characters.' }
+  // Error Checking
+  if (!fname || !lname || !email || !password) return { error: 'All fields are required.' }
+
+  const name = `${fname} ${lname}`
+  
+  if (!validateEmail(email))
+    return { error: 'Invalid email address.' }
+
+  const passwordError = validatePassword(password)
+  if (passwordError) return { error: passwordError }
 
   const existing = await findUserByEmail(email)
   if (existing) return { error: 'An account with that email already exists.' }

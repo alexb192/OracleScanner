@@ -43,26 +43,24 @@ export default function UsersTable({ users }: { users: User[] }) {
     return (
     <div className="bg-white dark:bg-zinc-900 shadow-sm rounded-md border border-zinc-200 dark:border-zinc-700">
     {/* Toolbar */}
-    <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
-
-        {/* Create User -- Name: string, Email: string, Password: string, Admin: boolean */}
-        <form key={formKey} action={registerFormAction} className="flex items-center gap-1.5 w-full">
-            <input type="text" name="name" placeholder="Name" className="w-40 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
+    <div className="flex flex-col px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
+        <form key={formKey} action={registerFormAction} className="flex items-center gap-1.5">
+            <input type="text" name="fname" placeholder="First Name" className="w-24 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
+            <input type="text" name="lname" placeholder="Last Name" className="w-24 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
             <input type="email" name="email" placeholder="Email" className="w-40 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
             <input type="password" name="password" placeholder="Password" className="w-40 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
-            <label className="flex items-center gap-1 text-sm text-zinc-700 dark:text-zinc-30₀">
+            <label className="flex items-center gap-1 text-sm text-zinc-700 dark:text-zinc-300">
                 Admin
                 <input type="checkbox" name="admin" className={checkboxClass} />
             </label>
-            <div className="w-px dark:bg-zinc-700 ml-auto" /> {/* spacer */}
-            {registerState && 'error' in registerState && (
-                <span title={registerState.error} className="text-amber-500 cursor-default select-none">⚠</span>
-            )}
-            {registerState && 'success' in registerState && (
-                <span title={registerState.success} className="text-green-500 cursor-default select-none">✓</span>
-            )}
             <button type="submit" className={actionBtnClass}>+ Create</button>
         </form>
+        {registerState && 'error' in registerState && (
+            <p aria-live="polite" className="text-sm text-red-500 mt-1.5">{registerState.error}</p>
+        )}
+        {registerState && 'success' in registerState && (
+            <p aria-live="polite" className="text-sm text-green-600 mt-1.5">{registerState.success}</p>
+        )}
     </div>
 
     {/* Table */}
