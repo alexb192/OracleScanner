@@ -15,18 +15,22 @@ export default async function Header() {
           </span>
           <div className="hidden sm:block h-5 w-px bg-zinc-300 dark:bg-zinc-700" />
           <nav className="flex items-center gap-1">
-            <Link
-              href="/dashboard"
-              className="rounded-md px-1.5 sm:px-3 py-1.5 text-xs sm:text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/scanner"
-              className="rounded-md px-1.5 sm:px-3 py-1.5 text-xs sm:text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
-            >
-              Scanner
-            </Link>
+            {session?.user && (
+              <div>
+                <Link
+                  href="/dashboard"
+                  className="rounded-md px-1.5 sm:px-3 py-1.5 text-xs sm:text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/scanner"
+                  className="rounded-md px-1.5 sm:px-3 py-1.5 text-xs sm:text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+                >
+                  Scanner
+                </Link>
+              </div>
+            )}
             {session?.user.admin && (
               <Link
                 href="/accounts"
