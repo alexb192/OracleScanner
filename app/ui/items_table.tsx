@@ -57,7 +57,7 @@ export default function ItemsTable({ items, isAdmin }: { items: Item[], isAdmin:
 
             {/* Toolbar */}
             <div className="flex flex-col px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
 
                     {/* Create group */}
                     <form action={handleSubmitItem} className="flex items-center gap-2">
@@ -73,39 +73,41 @@ export default function ItemsTable({ items, isAdmin }: { items: Item[], isAdmin:
                     </form>
 
                     {/* Divider */}
-                    <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1" />
+                    <div className="hidden sm:block w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1" />
 
                     {/* Selection-dependent group */}
-                    <form action={checkOutAction}>
-                        <input type="hidden" name="itemId" value={selectedId ?? ''} />
-                        <button
-                            type="submit"
-                            disabled={!selectedId || selectedItem?.checkedOut || checkOutPending}
-                            className={actionBtnClass}
-                        >
-                            Check Out
-                        </button>
-                    </form>
-                    <form action={checkInAction}>
-                        <input type="hidden" name="itemId" value={selectedId ?? ''} />
-                        <button
-                            type="submit"
-                            disabled={!selectedId || !selectedItem?.checkedOut || checkInPending}
-                            className={actionBtnClass}
-                        >
-                            Check In
-                        </button>
-                    </form>
-                    <form action={deleteAction}>
-                        <input type="hidden" name="id" value={selectedId ?? ''} />
-                        <button
-                            type="submit"
-                            disabled={!isAdmin || !selectedId || deletePending}
-                            className={actionBtnClass}
-                        >
-                            Delete
-                        </button>
-                    </form>
+                    <div className="flex items-center gap-2">
+                        <form action={checkOutAction}>
+                            <input type="hidden" name="itemId" value={selectedId ?? ''} />
+                            <button
+                                type="submit"
+                                disabled={!selectedId || selectedItem?.checkedOut || checkOutPending}
+                                className={actionBtnClass}
+                            >
+                                Check Out
+                            </button>
+                        </form>
+                        <form action={checkInAction}>
+                            <input type="hidden" name="itemId" value={selectedId ?? ''} />
+                            <button
+                                type="submit"
+                                disabled={!selectedId || !selectedItem?.checkedOut || checkInPending}
+                                className={actionBtnClass}
+                            >
+                                Check In
+                            </button>
+                        </form>
+                        <form action={deleteAction}>
+                            <input type="hidden" name="id" value={selectedId ?? ''} />
+                            <button
+                                type="submit"
+                                disabled={!isAdmin || !selectedId || deletePending}
+                                className={actionBtnClass}
+                            >
+                                Delete
+                            </button>
+                        </form>
+                    </div>
                 </div>
                 {(checkOutState?.error ?? checkInState?.error ?? deleteState?.error) && (
                     <p aria-live="polite" className="text-sm text-red-500 mt-1.5">

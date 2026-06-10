@@ -44,15 +44,17 @@ export default function UsersTable({ users }: { users: User[] }) {
     {/* Toolbar */}
     <div className="flex flex-col px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
         <form key={formKey} action={registerFormAction} className="flex flex-wrap items-center gap-1.5">
-            <input type="text" name="fname" placeholder="First Name" className="w-24 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
-            <input type="text" name="lname" placeholder="Last Name" className="w-24 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
-            <input type="email" name="email" placeholder="Email" className="w-40 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
-            <input type="password" name="password" placeholder="Password" className="w-40 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
-            <label className="flex items-center gap-1 text-sm text-zinc-700 dark:text-zinc-300">
-                Admin
-                <input type="checkbox" name="admin" className={checkboxClass} />
-            </label>
-            <button type="submit" className={actionBtnClass}>+ Create</button>
+            <input type="text" name="fname" placeholder="First Name" title="First Name" className="w-28 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
+            <input type="text" name="lname" placeholder="Last Name" title="Last Name" className="w-28 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
+            <input type="email" name="email" placeholder="Email" title="email@domain.com" className="w-28 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
+            <input type="password" name="password" placeholder="Password" title="6-16 characters, 1 uppercase, 1 lowercase, 1 number" className="w-28 px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded-sm bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600" required />
+            <div className="flex items-center gap-1.5">
+                <label className="flex items-center gap-1.5 px-3 py-1 text-sm font-medium rounded-sm border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
+                    Admin
+                    <input type="checkbox" name="admin" className={checkboxClass} />
+                </label>
+                <button type="submit" className={actionBtnClass}>+ Create</button>
+            </div>
         </form>
         {registerState && 'error' in registerState && (
             <p aria-live="polite" className="text-sm text-red-500 mt-1.5">{registerState.error}</p>
